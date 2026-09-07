@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: starttech-backend-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: starttech-backend
+  template:
+    metadata:
+      labels:
+        app: starttech-backend
+    spec:
+      containers:
+      - name: backend
+        image: 354467140882.dkr.ecr.us-east-1.amazonaws.com/starttech-backend-api:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: REDIS_HOST
+          value: "starttech-redis.xxxxxx.clustercfg.use1.cache.amazonaws.com"
+        - name: REDIS_PORT
+          value: "6379"
