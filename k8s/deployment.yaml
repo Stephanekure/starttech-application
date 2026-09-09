@@ -4,6 +4,11 @@ metadata:
   name: starttech-backend-deployment
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: starttech-backend
@@ -14,11 +19,13 @@ spec:
     spec:
       containers:
       - name: backend
-        image: 354467140882.dkr.ecr.us-east-1.amazonaws.com/starttech-backend-api:latest
+        image: 826971435982.dkr.ecr.us-east-1.amazonaws.com/starttech-backend-api
         ports:
         - containerPort: 8080
         env:
         - name: REDIS_HOST
-          value: "starttech-redis.xxxxxx.clustercfg.use1.cache.amazonaws.com"
+          value: "starttech-redis.9ain3l.0001.use1.cache.amazonaws.com:6379"
         - name: REDIS_PORT
           value: "6379"
+        - name: MONGO_URI
+          value: "mongodb+srv://ekurestephan_db_user:YhkVyDGow1yQtcXn@cluster0.t5i6r4r.mongodb.net/?appName=Cluster0"

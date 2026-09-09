@@ -1,0 +1,51 @@
+name: Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'frontend/**'
+
+env:
+  AWS_REGION: us-east-1
+  # We will need to update these two placeholders next!
+  S3_BUCKET: "starttech-frontend-bucket-20260908225641910600000001"
+  CLOUDFRONT_DIST_ID: "E101DXE962KQWA"
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run Security Audit
+      working-directory: ./frontend
+      run: npm audit
+
+    - name: Build Static Site
+      working-directory: ./frontend
+      run: npm run build
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Sync to S3
+      # Note: Change 'build' to 'dist' if the React app uses Vite instead of Create React App
+      working-directory: ./frontend/build 
+      run: aws s3 sync . s3://${{ env.S3_BUCKET }} --delete
+
+    - name: Invalidate CloudFront Cache
+      run: aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DIST_ID }} --paths "/*"
